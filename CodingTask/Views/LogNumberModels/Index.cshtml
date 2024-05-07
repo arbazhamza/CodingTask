@@ -1,0 +1,109 @@
+﻿@model LogNumberViewModel
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    /* Custom CSS for Start Number and End Number labels */
+    .number-label {
+        font-weight: 600; /* Make the font bold */
+        font-size: 1.2em; /* Increase font size slightly */
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-2 text-center">
+            <!-- Left logo -->
+            <img src="https://www.exelmans.be/wp-content/uploads/2011/12/eurofins-logo-baseline-600x337.jpg" alt="Left Logo" style="max-width: 150px;">
+        </div>
+        <div class="col-md-8 text-center">
+            <!-- Header -->
+            <h1 class="display-4">Eurofins Challenge</h1>
+        </div>
+        <div class="col-md-2 text-center">
+            <!-- Right logo -->
+            <img src="https://www.exelmans.be/wp-content/uploads/2011/12/eurofins-logo-baseline-600x337.jpg" alt="Right Logo" style="max-width: 150px;">
+        </div>
+    </div>
+    <div class="row justify-content-center " style="margin-top: 20px;">
+        <div class="col-md-4 text-center">
+            <div class="form-group">
+                <label for="startNumber" class="number-label">Start Number</label>
+                <input type="number" class="form-control form-control-lg" id="startNumber" name="startNumber" value="1">
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            <div class="form-group">
+                <label for="endNumber" class="number-label">End Number </label>
+                <input type="number" class="form-control form-control-lg" id="endNumber" name="endNumber" value="100">
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <button type="button" class="btn btn-primary btn-lg" id="generateBtn">Generate</button>
+        </div>
+    </div>
+
+
+    <div id="numbersContainer" class="mt-3 text-center" style=" width: 710px; margin: 0 auto;">
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @Model.ErrorMessage
+            </div>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var number in Model.Numbers)
+                {
+                    <li class="list-group-item">@number</li>
+                }
+            </ul>
+        }
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#generateBtn').click(function () {
+            var startNumber = $('#startNumber').val();
+            var endNumber = $('#endNumber').val();
+            // Client-side validation
+            if (startNumber < 0) {
+                // Display a warning alert if start number is greater than end number
+                alert('The starting number should fall within the range of 0 to 100');
+                return; // Exit the function
+            } else if (endNumber > 100) {
+                alert('The ending number should fall within the range of 0 to 100');
+                return; // Exit the function
+            } else if (parseInt(startNumber) > parseInt(endNumber)) {
+                // Display a warning alert if start number is greater than end number
+                alert('Start number cannot be greater than end number');
+                return; // Exit the function
+            }
+            if (!startNumber) {
+                startNumber = 1;
+                $('#startNumber').val(startNumber);
+            }
+            if (!endNumber) {
+                endNumber = 100;
+                $('#endNumber').val(endNumber);
+            }
+
+            // AJAX request to update numbers
+            $.ajax({
+                url: '@Url.Action("index", "LogNumberModels")',
+                type: 'GET',
+                data: { startNumber: startNumber, endNumber: endNumber },
+                success: function (data) {
+                    $('#numbersContainer').html($(data).find('#numbersContainer'));
+                },
+                error: function () {
+                    alert('Error occurred while updating numbers.');
+                }
+            });
+        });
+    });
+</script>
